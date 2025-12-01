@@ -380,7 +380,7 @@ import { ElMessage } from "element-plus";
 import { apiClient } from "../api/apiService.js";
 import { useStore } from "vuex";
 import { ElForm, ElFormItem, ElInput } from "element-plus"; // 注意：ElMessage 重复导入已移除
-import { validatePhone, validateIdCard, validatePositiveNumber } from "@/utils/validator";
+//*import { validatePhone, validateIdCard, validatePositiveNumber } from "@/utils/validator";
 import bank01 from "@/assets/img/zgnyyh.png";
 import bank02 from "@/assets/img/zggsyh.png";
 import bank03 from "@/assets/img/zgjsyh.png";
@@ -709,7 +709,22 @@ const combinationValidationRules = reactive({
   combinationPhone2: loanValidationRules.contact,
   combinationIdnum2: loanValidationRules.idNumber
 });
-
+// 合并所有需要的验证函数，统一导入一次
+import {
+  validatePhone,
+  validateIdCard,
+  validatePositiveNumber,
+  validateAddress,
+  validatePurpose
+} from "@/utils/validator.js"; // 补充完整文件后缀.js，保持路径格式一致
+idNumber: [
+  { required: true, message: '请输入身份证号', trigger: 'blur' },
+  {
+    validator: validateIdCard,
+    message: '身份证号格式不正确', // 补充格式错误提示，与第二个片段统一
+    trigger: 'blur'
+  }
+]
 // 表单引用
 const loanFormRef = ref(null);
 const combinationFormRef = ref(null);
@@ -718,16 +733,3 @@ const combinationFormRef = ref(null);
 @import "@/assets/form-validation.css";
 /* 其他样式 */
 </style>
-<script setup>
-// 导入时包含 validateIdCard
-import { validateIdCard, validateAddress, validatePurpose } from '@/utils/validator.js';
-
-// 在表单规则中使用
-const loanRules = {
-  idNumber: [
-    { required: true, message: '请输入身份证号', trigger: 'blur' },
-    { validator: validateIdCard, trigger: 'blur' } // 引用验证函数
-  ],
-  // 其他字段规则...
-};
-</script>

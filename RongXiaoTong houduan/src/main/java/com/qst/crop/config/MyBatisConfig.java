@@ -17,7 +17,7 @@ import javax.sql.DataSource;
 import java.util.Properties;
 
 @Configuration
-@MapperScan("com.qst.crop.dao")
+//*@MapperScan("com.qst.crop.dao")
 public class MyBatisConfig {
 
     @Autowired
