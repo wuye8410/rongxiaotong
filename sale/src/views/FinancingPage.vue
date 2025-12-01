@@ -718,3 +718,16 @@ const combinationFormRef = ref(null);
 @import "@/assets/form-validation.css";
 /* 其他样式 */
 </style>
+<script setup>
+// 导入时包含 validateIdCard
+import { validateIdCard, validateAddress, validatePurpose } from '@/utils/validator.js';
+
+// 在表单规则中使用
+const loanRules = {
+  idNumber: [
+    { required: true, message: '请输入身份证号', trigger: 'blur' },
+    { validator: validateIdCard, trigger: 'blur' } // 引用验证函数
+  ],
+  // 其他字段规则...
+};
+</script>
