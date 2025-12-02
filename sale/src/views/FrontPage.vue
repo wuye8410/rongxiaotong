@@ -172,7 +172,8 @@
                 style="z-index: 1"
               ></div>
               <img
-                :src="$store.state.imgShowRoad + '/file/avatar/' + specialist.avatar"
+
+                :src="specialist.avatar ? $store.state.imgShowRoad + '/file/avatar/' + specialist.avatar : '/src/assets/img/default-avatar.png'"
                 class="h-32 w-32 object-cover relative"
                 style="z-index: 2"
               />

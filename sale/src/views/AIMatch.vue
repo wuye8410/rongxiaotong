@@ -116,7 +116,9 @@
                 >
                   <img
                     :src="
-                      $store.state.imgShowRoad + '/file/avatar/' + user.avatar
+                      /**$store.state.imgShowRoad + '/file/avatar/' + user.avatar*/
+                      user.avatar ? $store.state.imgShowRoad + '/file/avatar/' + user.avatar : '/src/assets/img/default-avatar.png'
+
                     "
                     alt="User"
                     class="absolute inset-0 w-full h-full object-cover"

@@ -18,8 +18,9 @@
                       class="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-32 h-16 bg-[#007029] rounded-t-full"
                       style="z-index: 1"
                     ></div>
-                    <img
-                      :src="$store.state.imgShowRoad + '/file/avatar/' + specialist.avatar"
+                    <img>
+<!--                  :src="$store.state.imgShowRoad + '/file/avatar/' + specialist.avatar"-->
+                      :src="specialist.avatar ? $store.state.imgShowRoad + '/file/avatar/' + specialist.avatar : '/src/assets/img/default-avatar.png'"
                       class="h-32 w-32 object-cover relative"
                       style="z-index: 2"
                     />

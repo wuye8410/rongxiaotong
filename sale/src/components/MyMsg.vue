@@ -20,7 +20,8 @@
                 ? [
                     {
                       name: 'avatar',
-                      url: $store.state.imgShowRoad + '/file/avatar/' + avatar,
+                      /**url: $store.state.imgShowRoad + '/file/avatar/' + avatar,*/
+                      url: avatar ? $store.state.imgShowRoad + '/file/avatar/' + avatar : '/src/assets/img/default-avatar.png',
                     },
                   ]
                 : []
