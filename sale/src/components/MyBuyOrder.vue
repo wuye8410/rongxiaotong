@@ -11,7 +11,7 @@
         >
           <div class="h-40 bg-gray-100">
             <img
-              :src="$store.state.imgShowRoad + '/file/order/' + product.picture"
+              :src="product.picture ? $store.state.imgShowRoad + '/file/order/' + product.picture : '/default-order.png'"
               alt="商品图片"
               class="w-full h-full object-cover"
             />

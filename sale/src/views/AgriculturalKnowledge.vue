@@ -136,6 +136,17 @@
       </div>
     </div>
   </section>
+  <!-- 在知识标题下方添加收藏按钮 -->
+  <div class="flex items-center gap-4 mt-4">
+    <button 
+      class="flex items-center gap-1 text-sm"
+      :class="{ 'text-[#007029]': isCollected }"
+      @click="toggleCollect"
+    >
+      <StarIcon class="w-4 h-4" :class="{ 'fill-[#007029]': isCollected }" />
+      <span>{{ isCollected ? '已收藏' : '收藏' }}</span>
+    </button>
+  </div>
 </template>
 
 <script setup>
@@ -149,11 +160,14 @@ import { useRoute, useRouter } from "vue-router";
 import { ref, onMounted } from "vue";
 import { apiClient } from "../api/apiService.js";
 import { ElMessage } from 'element-plus';
+import { StarIcon } from 'lucide-vue-next';
 
 const route = useRoute();
 const router = useRouter();
+const knowledgeId = ref(route.query.knowledgeId);
+const isCollected = ref(false);
 
-let knowledgeId = ref();
+/*let knowledgeId = ref();*/
 let picPath = ref();
 let title = ref();
 let content = ref();
@@ -237,4 +251,46 @@ const toggleLike = (index) => {
   }
   comment.liked = !comment.liked;
 };
+
+// 初始化检查收藏状态
+onMounted(async () => {
+  try {
+    const response = await apiClient.get(`/collect/check/${knowledgeId.value}/2`, {
+      headers: { Authorization: window.localStorage.token }
+    });
+    isCollected.value = response.data;
+  } catch (error) {
+    console.error('检查收藏状态失败', error);
+  }
+});
+
+// 切换收藏
+const toggleCollect = async () => {
+  try {
+    if (isCollected.value) {
+      // 取消收藏
+      const response = await apiClient.delete(`/collect/cancel/${knowledgeId.value}/2`, {
+        headers: { Authorization: window.localStorage.token }
+      });
+      if (response.flag) {
+        isCollected.value = false;
+        ElMessage.success('取消收藏成功');
+      }
+    } else {
+      // 添加收藏
+      const response = await apiClient.post(`/collect/add/${knowledgeId.value}/2`, null, {
+        headers: { Authorization: window.localStorage.token }
+      });
+      if (response.flag) {
+        isCollected.value = true;
+        ElMessage.success('收藏成功');
+      } else {
+        ElMessage.warning(response.data);
+      }
+    }
+  } catch (error) {
+    ElMessage.error('操作失败，请先登录');
+  }
+};
+
 </script>

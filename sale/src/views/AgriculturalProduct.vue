@@ -170,7 +170,7 @@ const handleCancel = () => {
   }
 };
 
-const submitPublish = async () => {
+/**const submitPublish = async () => {
   if (!publishForm.value.title || !publishForm.value.price|| !publishForm.value.description) {
     ElMessage.error('请完整填写商品信息');
     return;
@@ -250,8 +250,93 @@ const submitPublish = async () => {
     console.error('发布商品失败:', error);
     ElMessage.error('发布商品失败');
   }
-};
+};*/
+const submitPublish = async () => {
+  if (!publishForm.value.title || !publishForm.value.price || !publishForm.value.description) {
+    ElMessage.error('请完整填写商品信息');
+    return;
+  }
+  if (publishForm.value.title.length < 2 || publishForm.value.title.length > 8) {
+    ElMessage.error('商品标题长度在2-8字之间');
+    return;
+  }
+  if (publishForm.value.description.length < 10 || publishForm.value.description.length > 150) {
+    ElMessage.error('详细介绍长度在10-150字之间');
+    return;
+  }
+  // 校验是否上传了图片
+  if (publishForm.value.images.length === 0) {
+    ElMessage.error('请上传商品图片');
+    return;
+  }
 
+  try {
+    // 上传图片（仅处理第一张，因为limit=1）
+    const file = publishForm.value.images[0];
+    const formData = new FormData();
+    formData.append("file", file.raw);
+
+    const response = await apiClient.post(
+        `${store.state.fileUploadRoad}/file/upload/order`,
+        formData,
+        {
+          headers: {
+            Authorization: window.localStorage.token,
+            "Content-Type": "multipart/form-data",
+          },
+        }
+    );
+
+    if (!response.flag || !response.data) {
+      ElMessage.error("图片上传失败：" + (response.message || "接口返回异常"));
+      return;
+    }
+
+    // 提取图片ID并校验
+    const imgParts = response.data.split('/');
+    const imgId = imgParts.length > 1 ? imgParts[1] : null;
+    if (!imgId) {
+      ElMessage.error("图片ID解析失败，请重试");
+      return;
+    }
+
+    // 发布商品（确保picture字段不为空）
+    const param = {
+      title: publishForm.value.title,
+      content: publishForm.value.description,
+      price: publishForm.value.price,
+      type: 'goods',
+      picture: imgId // 使用校验后的图片ID
+    };
+
+    const responseOrder = await apiClient.post(
+        `/order`,
+        param,
+        { headers: { Authorization: window.localStorage.token } }
+    );
+
+    if (responseOrder.flag) {
+      ElMessage.success("发布成功");
+      showPublishDialog.value = false;
+      // 重置表单
+      publishForm.value = {
+        title: '',
+        description: '',
+        price: '',
+        images: []
+      };
+      if (uploadRef.value) {
+        uploadRef.value.clearFiles();
+      }
+    } else {
+      ElMessage.error("发布失败：" + (responseOrder.message || "未知错误"));
+    }
+
+  } catch (error) {
+    console.error('发布商品失败:', error);
+    ElMessage.error('发布商品失败，请重试');
+  }
+};
 </script>
 
 <style scoped>

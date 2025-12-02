@@ -254,7 +254,7 @@ const handleCancel = () => {
   }
 };
 
-const submitPublish = async () => {
+/**const submitPublish = async () => {
   if (!publishForm.value.title || !publishForm.value.price|| !publishForm.value.description) {
     ElMessage.error('请完整填写商品信息');
     return;
@@ -288,12 +288,25 @@ const submitPublish = async () => {
         }
       );
       
-      if (response.flag) {
+      /**if (response.flag) {
         fileInfo.value = response.data.split('/')[1];
       } else {
         ElMessage.error("发布失败");
       }
     }
+// 修改后：添加非空校验，确保fileInfo有效
+      if (response.flag && response.data) {
+        const imgId = response.data.split('/')[1];
+        if (imgId) {
+          fileInfo.value = imgId;
+        } else {
+          ElMessage.error("图片ID获取失败");
+          return; // 终止发布流程
+        }
+      } else {
+        ElMessage.error("发布失败：" + (response.message || "未知错误"));
+        return;
+      }
       //判断是新增还是修改商品
       if(publishForm.value.orderId != ''){
         const param = ref({
@@ -371,7 +384,95 @@ const submitPublish = async () => {
     ElMessage.error('发布商品失败');
   }
 };
+*/
+const submitPublish = async () => {
+  try {
+    // 上传图片
+    const uploadedImages = [];
+    for (const file of publishForm.value.images) {
+      const formData = new FormData();
+      formData.append("file", file.raw);
 
+      // 上传商品图片
+      const response = await apiClient.post(
+          `${store.state.fileUploadRoad}/file/upload/order`,
+          formData,
+          {
+            headers: {
+              Authorization: window.localStorage.token,
+              "Content-Type": "multipart/form-data",
+            },
+          }
+      );
+
+      if (response.flag) {
+        fileInfo.value = response.data.split('/')[1];
+      } else {
+        ElMessage.error("发布失败");
+        return; // 上传失败直接终止
+      }
+    }
+
+    // 判断是新增还是修改商品
+    if (publishForm.value.orderId !== '') {
+      // 修改商品逻辑
+      const param = ref({
+        order_id: publishForm.value.orderId,
+        title: publishForm.value.title,
+        content: publishForm.value.description,
+        price: publishForm.value.price,
+        picture: fileInfo.value ? fileInfo.value : publishForm.value.pic
+      });
+      const responseOrder = await apiClient.put(
+          `/order/${publishForm.value.orderId}`,
+          param.value,
+          { headers: { Authorization: window.localStorage.token } }
+      );
+      if (responseOrder.flag) {
+        ElMessage.success("修改成功");
+      } else {
+        ElMessage.error("修改失败");
+      }
+    } else {
+      // 新增商品逻辑
+      const param = ref({
+        title: publishForm.value.title,
+        content: publishForm.value.description,
+        price: publishForm.value.price,
+        type: 'goods',
+        picture: fileInfo.value
+      });
+      const responseOrder = await apiClient.post(
+          `/order`,
+          param.value,
+          { headers: { Authorization: window.localStorage.token } }
+      );
+      if (responseOrder.flag) {
+        ElMessage.success("发布成功");
+      } else {
+        ElMessage.error("发布失败");
+      }
+    }
+
+    // 重置表单
+    showPublishDialog.value = false;
+    publishForm.value = {
+      orderId: '',
+      pic: '',
+      title: '',
+      description: '',
+      price: '',
+      images: []
+    };
+    if (uploadRef.value) {
+      uploadRef.value.clearFiles();
+    }
+
+  } catch (error) { // 确保catch紧跟try的闭合括号
+    console.error('发布商品失败:', error);
+    ElMessage.error('发布商品失败');
+  }
+};
 // 删除地址
 const deleteGoods = async(item) => {
   try{
@@ -488,9 +589,7 @@ const searchGoods = ()=> {
   loadData({
     page: pagination.value.currentPage,
   });
-};
-
-
+ };
 </script>
 
 <style scoped>

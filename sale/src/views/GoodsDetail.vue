@@ -156,6 +156,29 @@
     </div>
   </div>
 </section>
+<!-- 在互动按钮区域添加收藏按钮 -->
+  <div class="flex items-center gap-6 mb-8">
+    <!-- 原有点赞按钮 -->
+    <button class="flex items-center gap-1 text-gray-600 hover:text-[#007029]">
+      <ThumbsUpIcon class="w-5 h-5" />
+      <span>点赞</span>
+    </button>
+    
+    <!-- 新增收藏按钮 -->
+    <button 
+      class="flex items-center gap-1"
+      :class="{ 'text-[#007029]': isCollected }"
+      @click="toggleCollect"
+    >
+      <StarIcon class="w-5 h-5" :class="{ 'fill-[#007029]': isCollected }" />
+      <span>{{ isCollected ? '已收藏' : '收藏' }}</span>
+    </button>
+
+    <button class="flex items-center gap-1 text-gray-600 hover:text-[#007029]">
+      <MessageSquareIcon class="w-5 h-5" />
+      <span>评论</span>
+    </button>
+  </div>
 </template>
 
 <script setup>
@@ -164,6 +187,7 @@ import { useRoute, useRouter } from "vue-router";
 import { ref, onMounted } from "vue";
 import { apiClient } from "../api/apiService.js";
 import { ElMessage } from 'element-plus';
+//*import { StarIcon, ThumbsUpIcon, MessageSquareIcon } from 'lucide-vue-next';
 
 const route = useRoute();
 const router = useRouter();
@@ -271,7 +295,50 @@ const addShopCart = async() => {
   }
 
 };
+// 商品ID（从路由获取）
+const goodsId = ref(route.query.id); 
+const isCollected = ref(false); // 收藏状态
 
+// 初始化时检查是否已收藏
+onMounted(async () => {
+  try {
+    const response = await apiClient.get(`/collect/check/${goodsId.value}/1`, {
+      headers: { Authorization: window.localStorage.token }
+    });
+    isCollected.value = response.data;
+  } catch (error) {
+    console.error('检查收藏状态失败', error);
+  }
+});
+
+// 切换收藏状态
+const toggleCollect = async () => {
+  try {
+    if (isCollected.value) {
+      // 取消收藏
+      const response = await apiClient.delete(`/collect/cancel/${goodsId.value}/1`, {
+        headers: { Authorization: window.localStorage.token }
+      });
+      if (response.flag) {
+        isCollected.value = false;
+        ElMessage.success('取消收藏成功');
+      }
+    } else {
+      // 添加收藏
+      const response = await apiClient.post(`/collect/add/${goodsId.value}/1`, null, {
+        headers: { Authorization: window.localStorage.token }
+      });
+      if (response.flag) {
+        isCollected.value = true;
+        ElMessage.success('收藏成功');
+      } else {
+        ElMessage.warning(response.data);
+      }
+    }
+  } catch (error) {
+    ElMessage.error('操作失败，请先登录');
+  }
+};
 </script>
 
 <style scoped>
