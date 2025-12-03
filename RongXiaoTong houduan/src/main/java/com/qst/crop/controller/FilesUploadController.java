@@ -33,7 +33,7 @@ public class FilesUploadController {
         String originalFilename = file.getOriginalFilename();
         String tail = originalFilename.substring(originalFilename.lastIndexOf("."));
 //    图片常见的格式有：bmp、jpg、tiff、gif、pcx、tga、exif、fpx、svg、psd、cdr、pcd、dxf、ufo、eps、ai、raw等
-        if (!tail.equals(".jpg") & !tail.equals(".gif") & !tail.equals(".png") & !tail.equals(" eg") &
+        if (!tail.equals(".jpg") & !tail.equals(".gif") & !tail.equals(".png") & !tail.equals(".eg") &
                 !tail.equals(".webp") & !tail.equals(".mp4")) {
             throw new FileFormatException("请传入正确格式文件");
         }

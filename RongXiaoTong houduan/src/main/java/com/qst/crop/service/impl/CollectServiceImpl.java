@@ -1,8 +1,8 @@
 package com.qst.crop.service.impl;
-
 import com.qst.crop.entity.Collect;
-import com.qst.crop.service.CollectService;
 import org.springframework.stereotype.Service;
+// 新增这行：导入CollectService接口
+import com.qst.crop.service.CollectService;
 
 // 标记为Service层组件，让Spring扫描并创建Bean
 @Service
