@@ -1,339 +1,193 @@
 <template>
-  <!-- 主内容区 -->
-  <div class="max-w-2xl mx-auto pr-48">
-    <!-- 收货地址 -->
-    <div class="space-y-6">
-      <!-- 已有地址列表 -->
+  <div class="max-w-2xl mx-auto p-4">
+    <!-- 地址列表标题 -->
+    <div class="text-xl font-semibold mb-6">我的收货地址</div>
+
+    <!-- 地址列表 -->
+    <div v-if="addresses.length > 0" class="space-y-4">
       <div
-        v-for="(addr, index) in shippingAddresses"
-        :key="index"
-        class="border rounded-lg p-4 relative"
+          v-for="addr in addresses"
+          :key="addr.id"
+          class="border rounded-lg p-4 flex justify-between items-start"
       >
-        <div class="absolute top-2 right-2 flex space-x-2">
-          <button
-            @click="editAddress(index)"
-            class="text-blue-500 hover:text-blue-700"
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="16"
-              height="16"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              class="lucide lucide-pencil"
-            >
-              <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" />
-              <path d="m15 5 4 4" />
-            </svg>
-          </button>
-          <button
-            @click="deleteAddress(addr)"
-            class="text-red-500 hover:text-red-700"
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="16"
-              height="16"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              class="lucide lucide-trash-2"
-            >
-              <path d="M3 6h18" />
-              <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" />
-              <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" />
-              <path d="M10 11v6" />
-              <path d="M14 11v6" />
-            </svg>
-          </button>
-        </div>
-
-        <div class="flex items-center mb-2">
-          <span class="font-medium">{{ addr.consignee }}</span>
-          <span class="ml-4 text-gray-600">{{ addr.phone }}</span>
-          <span
-            v-if="addr.isDefault"
-            class="ml-auto px-2 py-0.5 mt-3 text-xs bg-green-100 text-green-800 rounded"
-            >默认</span
-          >
-        </div>
-
-        <div class="text-gray-600">{{ addr.addressDetail }}</div>
-      </div>
-
-      <!-- 添加新地址按钮 -->
-      <div
-        class="border border-dashed rounded-lg p-4 flex items-center justify-center cursor-pointer hover:bg-gray-50"
-        @click="showAddressForm = true"
-      >
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          width="20"
-          height="20"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2"
-          stroke-linecap="round"
-          stroke-linejoin="round"
-          class="lucide lucide-plus"
-        >
-          <path d="M5 12h14" />
-          <path d="M12 5v14" />
-        </svg>
-        <span class="ml-2 text-gray-600">添加新地址</span>
-      </div>
-
-      <!-- 添加/编辑地址表单弹窗 -->
-      <el-dialog
-        v-model="showAddressForm"
-        :title="editingAddressIndex === -1 ? '添加新地址' : '编辑地址'"
-        width="600px"
-      >
-        <div class="space-y-4 px-4">
-          <div class="grid grid-cols-2 gap-4">
-          <div class="space-y-1">
-            <label class="text-sm text-gray-600">收货人</label>
-            <input
-              type="text"
-              v-model="currentAddress.consignee"
-              class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-1 focus:ring-green-500"
-              placeholder="请输入收货人姓名"
-            />
+        <!-- 地址信息 -->
+        <div>
+          <div class="flex items-center mb-2">
+            <span class="font-medium">{{ addr.consignee }}</span>
+            <span class="ml-2 text-xs bg-green-100 text-green-800 px-2 py-0.5 rounded" v-if="addr.isDefault">
+              默认地址
+            </span>
           </div>
-
-          <div class="space-y-1">
-            <label class="text-sm text-gray-600">手机号码</label>
-            <input
-              type="text"
-              v-model="currentAddress.phone"
-              class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-1 focus:ring-green-500"
-              placeholder="请输入手机号码"
-            />
-          </div>
+          <div class="text-gray-600 mb-1">{{ addr.phone }}</div>
+          <div class="text-gray-700">{{ addr.addressDetail }}</div>
         </div>
 
-        <div class="space-y-1">
-          <label class="text-sm text-gray-600">详细地址</label>
-          <input
-            type="text"
-            v-model="currentAddress.detailAddress"
-            class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-1 focus:ring-green-500"
-            placeholder="请输入详细地址，如街道、门牌号等"
-          />
+        <!-- 操作按钮 -->
+        <div class="flex space-x-2">
+          <button @click="handleEdit(addr)" class="text-blue-600 text-sm">编辑</button>
+          <button @click="handleDelete(addr.id)" class="text-red-600 text-sm">删除</button>
         </div>
-
-        <div class="flex items-center">
-          <input
-            type="checkbox"
-            id="defaultAddress"
-            v-model="currentAddress.isDefault"
-            class="rounded text-green-600 focus:ring-green-500"
-          />
-          <label for="defaultAddress" class="ml-2 text-sm text-gray-600"
-            >设为默认收货地址</label
-          >
-        </div>
-
-        </div>
-        <template #footer>
-          <span class="dialog-footer">
-            <el-button @click="resetAddressForm();showAddressForm = false">取消</el-button>
-            <el-button type="primary" @click="saveAddress">保存</el-button>
-          </span>
-        </template>
-      </el-dialog>
+      </div>
     </div>
+
+    <!-- 空地址提示 -->
+    <div v-else class="text-center py-10 text-gray-500">
+      暂无收货地址，请添加
+    </div>
+
+    <!-- 添加地址按钮 -->
+    <div class="mt-6">
+      <button
+          @click="showAddressForm = true"
+          class="w-full py-2 border border-dashed rounded-lg text-gray-600 hover:bg-gray-50 transition"
+      >
+        <i class="mr-1">+</i> 添加新地址
+      </button>
+    </div>
+
+    <!-- 地址表单对话框 -->
+    <el-dialog
+        v-model="showAddressForm"
+        :title="currentAddress.id ? '编辑地址' : '添加地址'"
+        width="600px"
+    >
+      <el-form
+          :model="currentAddress"
+          :rules="addressRules"
+          ref="addressFormRef"
+          label-width="80px"
+      >
+        <!-- 收货人 -->
+        <el-form-item label="收货人" prop="consignee">
+          <el-input
+              v-model="currentAddress.consignee"
+              placeholder="请输入收货人姓名"
+          ></el-input>
+        </el-form-item>
+
+        <!-- 手机号 -->
+        <el-form-item label="手机号" prop="phone">
+          <!-- 避免number类型导致的科学计数法问题 -->
+          <el-input
+              v-model="currentAddress.phone"
+              placeholder="请输入11位手机号"
+              type="text"
+          ></el-input>
+        </el-form-item>
+
+        <!-- 详细地址 -->
+        <el-form-item label="详细地址:" prop="addressDetail">
+          <el-input
+              v-model="currentAddress.addressDetail"
+              placeholder="请输入详细地址"
+              rows=3
+              type="textarea"
+          ></el-input>
+        </el-form-item>
+
+        <!-- 是否默认地址 -->
+        <el-form-item>
+          <el-checkbox v-model="currentAddress.isDefault">设为默认地址</el-checkbox>
+        </el-form-item>
+      </el-form>
+
+      <template #footer>
+        <el-button @click="showAddressForm = false">取消</el-button>
+        <el-button type="primary" @click="handleSave">保存</el-button>
+      </template>
+    </el-dialog>
   </div>
 </template>
 
 <script setup>
-import { ref, reactive } from "vue";
-import { onMounted } from "vue";
-import { UserIcon } from "lucide-vue-next";
-import { defineComponent } from "vue";
-import { apiClient } from "../api/apiService.js";
-import { useRouter } from "vue-router";
-import { ElMessage, ElDialog, ElButton } from "element-plus";
-import { useStore } from "vuex";
-// 菜单展开状态
-const expandedMenus = reactive({
-  myInfo: true,
-  myPosts: false,
-});
+import { ref, reactive } from 'vue';
+import { ElDialog, ElForm, ElFormItem, ElInput, ElCheckbox, ElButton } from 'element-plus';
 
-// 切换菜单展开状态
-const toggleMenu = (menu) => {
-  expandedMenus[menu] = !expandedMenus[menu];
-};
+// 地址列表数据（实际项目中从接口获取）
+const addresses = reactive([
+  // 示例数据
+  // {
+  //   id: 1,
+  //   consignee: '张三',
+  //   phone: '13800138000',
+  //   addressDetail: '北京市朝阳区XX街道XX小区1号楼1单元101',
+  //   isDefault: true
+  // }
+]);
 
-
-
-// 收货地址数据
-const shippingAddresses = ref([]);
-
-onMounted(async () => {
-  //检索地址信息
-  const addData = await selectPersAdd();
-  shippingAddresses.value  = addData;
-  
-});
-
-// 查询个人信息接口
-const selectPersAdd = async () => {
-  try {
-    const response = await apiClient.get("/address/selectByOwnName", {
-      headers: {
-        Authorization: window.localStorage.token,
-      },
-    });
-    console.log("请求成功", response.data);
-    if (response.flag == true) {
-      return response.data;
-    } else {
-      console.error("请求失败", error);
-    }
-  } catch (error) {
-    console.error("请求失败", error);
-    throw error;
-  }
-};
-
-// 地址表单控制
+// 控制对话框显示
 const showAddressForm = ref(false);
-const editingAddressIndex = ref(-1);
+
+// 当前编辑/新增的地址对象
 const currentAddress = reactive({
-  id:"",
-  ownName:"",
-  consignee: "",
-  phone: "",
-  detailAddress: "",
-  isDefault: false,
+  id: '',
+  consignee: '',
+  phone: '',
+  addressDetail: '',
+  isDefault: false
 });
+
+// 表单验证规则
+const addressRules = {
+  consignee: [
+    { required: true, message: '请输入收货人姓名', trigger: 'blur' }
+  ],
+  phone: [
+    { required: true, message: '请输入手机号', trigger: 'blur' },
+    { pattern: /^1[3-9]\d{9}$/, message: '请输入正确的11位手机号', trigger: 'blur' }
+  ],
+  addressDetail: [
+    { required: true, message: '请输入详细地址', trigger: 'blur' }
+  ]
+};
+
+// 表单引用
+const addressFormRef = ref(null);
 
 // 编辑地址
-const editAddress = (index) => {
-  const addr = shippingAddresses.value[index];
-  currentAddress.id = addr.id;
-  currentAddress.consignee = addr.consignee;
-  currentAddress.ownName = addr.ownName;
-  currentAddress.phone = addr.phone;
-  currentAddress.detailAddress = addr.addressDetail;
-  currentAddress.isDefault = addr.isDefault;
-
-  editingAddressIndex.value = index;
+const handleEdit = (addr) => {
+  // 深拷贝地址数据到当前编辑对象
+  Object.assign(currentAddress, JSON.parse(JSON.stringify(addr)));
   showAddressForm.value = true;
 };
 
 // 删除地址
-const deleteAddress = async(addr) => {
-  try{
-    if (confirm("确定要删除这个地址吗？")) {
-      if(addr.isDefault){
-        ElMessage.error("该地址为默认地址不能删除。");
-        return;
-      }
-      //删除
-      const response = await apiClient.delete(`/address/delete/${addr.id}`, {
-        headers: {
-          Authorization: window.localStorage.token,
-          "Content-Type": "application/json"
-        }
-      });
-      console.log('Delete response:', response); // Debug logging
-      if (response.flag == true) {
-        ElMessage.success("删除地址成功。");
-      }
-      else {
-        ElMessage.error("删除地址失败，请重试。");
-      }
-
-      //重新获取地址
-      const addData = await selectPersAdd();
-      shippingAddresses.value  = addData;
-    }
-  }  catch (error) {
-    console.error('删除地址失败，请重试:', error);
+const handleDelete = (id) => {
+  const index = addresses.findIndex(addr => addr.id === id);
+  if (index !== -1) {
+    addresses.splice(index, 1);
   }
 };
 
-// 保存地址
-const saveAddress = async() => {
-  try{
-    const param = {
-      id: currentAddress.id,
-      consignee: currentAddress.consignee,
-      phone: currentAddress.phone,
-      ownName:currentAddress.ownName,
-      addressDetail: currentAddress.detailAddress,
-      isDefault: currentAddress.isDefault,
-    };
+// 保存地址（新增/编辑）
+const handleSave = async () => {
+  // 表单验证
+  const valid = await addressFormRef.value.validate();
+  if (!valid) return;
 
-
-    if (editingAddressIndex.value === -1) {
-      // 添加新地址
-      const response = await apiClient.post(`/address/add`, param, {
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: window.localStorage.token,
-      },
-      });
-
-      if (response.flag) {
-        ElMessage.success("添加地址成功。");
-      } else {
-        ElMessage.error(response.data);
-      }
-    } else {
-      // 更新现有地址
-      const response = await apiClient.post(`/address/defaultAddressInfoUpdate`, param, {
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: window.localStorage.token,
-      },
-      });
-
-      if (response.flag) {
-        ElMessage.success("更新地址成功。");
-      } else {
-        ElMessage.error(response.data);
-      }
+  if (currentAddress.id) {
+    // 编辑：更新现有地址
+    const index = addresses.findIndex(addr => addr.id === currentAddress.id);
+    if (index !== -1) {
+      addresses[index] = { ...currentAddress };
     }
-
-    //重新获取地址
-    const addData = await selectPersAdd();
-    shippingAddresses.value  = addData;
-
-    // 重置表单
-    resetAddressForm();
-
-  }  catch (error) {
-    console.error('咨询失败，请重试:', error);
+  } else {
+    // 新增：添加新地址
+    addresses.push({
+      ...currentAddress,
+      id: Date.now()  // 临时用时间戳作为id，实际项目用接口返回的id
+    });
   }
-};
 
-// 重置地址表单
-const resetAddressForm = () => {
-  currentAddress.id = "";
-  currentAddress.consignee = "";
-  currentAddress.ownName = "";
-  currentAddress.phone = "";
-  currentAddress.detailAddress = "";
-  currentAddress.isDefault = false;
-
-  editingAddressIndex.value = -1;
+  // 关闭对话框并重置表单
   showAddressForm.value = false;
+  addressFormRef.value.resetFields();
+  Object.keys(currentAddress).forEach(key => {
+    currentAddress[key] = key === 'isDefault' ? false : '';
+  });
 };
-
 </script>
 
 <style scoped>
-/* 可以添加额外的样式 */
+/* 可根据需要添加自定义样式 */
 </style>

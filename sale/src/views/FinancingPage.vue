@@ -352,7 +352,7 @@
 </template>
 
 <script setup>
-import { useRoute, useRouter } from "vue-router";
+/*import { useRoute, useRouter } from "vue-router";
 import { ref, reactive, onMounted } from "vue";
 import { ElMessage } from "element-plus";
 import { apiClient } from "../api/apiService.js";
@@ -360,10 +360,21 @@ import { useStore } from "vuex";
 import { ElForm, ElFormItem, ElInput } from "element-plus";
 import { validatePhone, validateIdCard, validatePositiveNumber } from "@/utils/validator";
 import bank01 from "@/assets/img/zgnyyh.png";
-
+import ElementPlus from 'element-plus'
+import 'element-plus/dist/index.css'
+const app = createApp(App)
+app.use(ElementPlus)
 const route = useRoute();
 const router = useRouter();
-const store = useStore();
+const store = useStore();*/
+import { useRoute, useRouter } from "vue-router";
+import { ref, reactive, onMounted, createApp } from "vue"; // 补充导入 createApp（如果需要，但实际这里用不到）
+import { ElMessage } from "element-plus";
+import { apiClient } from "../api/apiService.js";
+import { useStore } from "vuex";
+import { ElForm, ElFormItem, ElInput } from "element-plus"; // 恢复组件导入
+import { validatePhone, validateIdCard, validatePositiveNumber } from "@/utils/validator";
+import bank01 from "@/assets/img/zgnyyh.png";
 
 // 银行信息
 let bankId = ref();
@@ -527,8 +538,19 @@ const uploadFiles = async (files, uploadLoadingRef, dbFilesRef, type) => {
       const formData = new FormData();
       formData.append("file", file);
 
-      const response = await apiClient.post(
+      /*const response = await apiClient.post(
           `${baseUrl}/uploadInfo/${type}`,
+          formData,
+          {
+            headers: { Authorization: token },
+            onUploadProgress: (progressEvent) => {
+              const progress = (progressEvent.loaded / progressEvent.total) * 100;
+              console.log(`文件 ${file.name} 上传进度：${progress.toFixed(2)}%`);
+            },
+          }
+      );*/
+      const response = await apiClient.post(
+          `/file/uploadInfo/${type}`,  // 直接使用正确的相对路径
           formData,
           {
             headers: { Authorization: token },
@@ -621,7 +643,7 @@ const resetCombinationLoanForm = () => {
 };
 
 // 测试文件上传方法
-const testFileUpload = async (file, type = 'personal') => {
+/*const testFileUpload = async (file, type = 'personal') => {
   try {
     const formData = new FormData();
     formData.append('file', file);
@@ -656,7 +678,7 @@ const testFileUpload = async (file, type = 'personal') => {
     console.error("文件上传测试失败：", error);
     throw error;
   }
-};
+};*/
 
 // 个人贷款提交
 const submitLoanApplication = async () => {
