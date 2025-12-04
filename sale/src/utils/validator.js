@@ -295,3 +295,20 @@ export const validatePurpose = (rule, value, callback, min = 2, max = 200) => {
         callback(new Error(`贷款用途长度需在${min}-${max}位之间`));
     }
 };
+// 验证是否为有效数字（非NaN）
+export const validateNumber = (rule, value, callback) => {
+    const num = Number(value);
+    if (isNaN(num)) {
+        return callback(new Error('请输入有效的数字'));
+    }
+    callback();
+};
+
+// 在表单规则中使用
+const loanValidationRules = {
+    term: [
+        { required: true, message: '请输入贷款周期', trigger: ['blur', 'change'] },
+        { validator: validateNumber, message: '贷款周期必须为数字', trigger: 'blur' },
+        // ...
+    ]
+};

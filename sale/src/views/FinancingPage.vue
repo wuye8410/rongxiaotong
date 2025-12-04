@@ -388,6 +388,16 @@ let bankrepay = ref();
 // 模态框状态
 const showLoanModal = ref(false);
 const showCombinationModal = ref(false);
+// 提交表单时，对数字类型字段进行转换
+const submitLoan = async () => {
+  const param = {
+    ...loanForm.value,
+    amount: Number(loanForm.value.amount), // 转为数字
+    term: Number(loanForm.value.term),
+    // 其他需要数字的字段同理
+  };
+  // 调用接口提交param
+};
 
 // 个人贷款表单
 const loanForm = ref({

@@ -1,89 +1,102 @@
 <template>
   <!-- 主内容区 -->
-  <div class="max-w-2xl mx-auto pr-48">
+  <div class="max-w-2xl mx-auto pr-48 py-8">
     <!-- 基本信息 -->
-
-    <div class="space-y-4">
-      <!-- 头像 - 所有页面都显示 -->
+    <div class="space-y-6">
+      <!-- 头像上传区域 -->
       <div class="flex justify-center">
         <el-form label-width="80px">
           <el-upload
-            ref="uploadRef"
-            action="#"
-            list-type="picture-card"
-            :on-change="handleImageUpload"
-            :on-remove="() => avatar.value = ''"
-            :auto-upload="false"
-            :limit="1"
-            :file-list="
-              avatar
-                ? [
-                    {
-                      name: 'avatar',
-                      /**url: $store.state.imgShowRoad + '/file/avatar/' + avatar,*/
-                      url: avatar ? $store.state.imgShowRoad + '/file/avatar/' + avatar : '/src/assets/img/default-avatar.png',
-                    },
-                  ]
-                : []
-            "
-            class="[&_.el-upload-list__item]:!rounded-full [&_.el-upload--picture-card]:!rounded-full"
+              ref="uploadRef"
+              action="#"
+              list-type="picture-card"
+              :on-change="handleImageUpload"
+              :on-remove="() => { avatar.value = ''; image.value = [] }"
+              :auto-upload="false"
+              :limit="1"
+              :file-list="avatar ? [{
+              name: 'avatar',
+              url: avatar ? `${$store.state.imgShowRoad}/file/avatar/${avatar}` : '/src/assets/img/default-avatar.png'
+            }] : []"
+              class="[&_.el-upload-list__item]:!rounded-full [&_.el-upload--picture-card]:!rounded-full"
           >
             <el-icon class="text-2xl"><PlusIcon /></el-icon>
           </el-upload>
+          <p class="text-xs text-gray-500 mt-2 text-center">支持JPG、PNG格式，不超过2MB</p>
         </el-form>
       </div>
+
+      <!-- 昵称输入 -->
       <div class="flex items-center">
         <label class="w-20 text-right mr-4 text-gray-600">昵称:</label>
         <input
-          type="text"
-          v-model="nickname"
-          class="flex-1 border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-1 focus:ring-green-500"
+            type="text"
+            v-model="nickname"
+            class="flex-1 border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-1 focus:ring-green-500"
+            maxlength="20"
+            placeholder="请输入昵称"
         />
       </div>
 
+      <!-- 姓名输入 -->
       <div class="flex items-center">
         <label class="w-20 text-right mr-4 text-gray-600">姓名:</label>
         <input
-          type="text"
-          v-model="name"
-          class="flex-1 border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-1 focus:ring-green-500"
+            type="text"
+            v-model="name"
+            class="flex-1 border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-1 focus:ring-green-500"
+            maxlength="10"
+            placeholder="请输入真实姓名"
         />
       </div>
 
+      <!-- 手机号输入 -->
       <div class="flex items-center">
         <label class="w-20 text-right mr-4 text-gray-600">手机号:</label>
         <input
-          type="text"
-          v-model="phone"
-          class="flex-1 border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-1 focus:ring-green-500"
+            type="tel"
+            v-model="phone"
+            class="flex-1 border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-1 focus:ring-green-500"
+            maxlength="11"
+            placeholder="请输入11位手机号"
+            @input="phone = phone.replace(/[^\d]/g, '')"
         />
       </div>
 
+      <!-- 身份证输入 -->
       <div class="flex items-center">
         <label class="w-20 text-right mr-4 text-gray-600">身份证:</label>
         <input
-          type="text"
-          v-model="idCard"
-          class="flex-1 border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-1 focus:ring-green-500"
+            type="text"
+            v-model="idCard"
+            class="flex-1 border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-1 focus:ring-green-500"
+            maxlength="18"
+            placeholder="请输入18位身份证号"
+            @input="idCard = idCard.replace(/[^\dXx]/g, '').toUpperCase()"
         />
       </div>
 
+      <!-- 地址输入 -->
       <div class="flex items-center">
         <label class="w-20 text-right mr-4 text-gray-600">地址:</label>
         <input
-          type="text"
-          v-model="address"
-          class="flex-1 border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-1 focus:ring-green-500"
+            type="text"
+            v-model="address"
+            class="flex-1 border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-1 focus:ring-green-500"
+            maxlength="100"
+            placeholder="请输入详细地址"
         />
       </div>
 
       <!-- 保存按钮 -->
       <div class="flex justify-center mt-8">
         <button
-          @click="saveProfile"
-          class="bg-green-700 hover:bg-green-800 text-white font-medium py-2 px-12 rounded-full focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2"
+            @click="saveProfile"
+            :disabled="isSaving"
+            class="bg-green-700 hover:bg-green-800 text-white font-medium py-2 px-12 rounded-full focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 disabled:opacity-70 disabled:cursor-not-allowed"
         >
-          保存
+          <template v-if="isSaving">保存中...</template>
+          <template v-else>保存</template>
         </button>
       </div>
     </div>
@@ -91,31 +104,15 @@
 </template>
 
 <script setup>
-import { ref, reactive } from "vue";
-import { onMounted } from "vue";
-import { UserIcon } from "lucide-vue-next";
-import { defineComponent } from "vue";
+import { ref, onMounted } from "vue";
 import { apiClient } from "../api/apiService.js";
 import { useRouter } from "vue-router";
 import { ElMessage } from "element-plus";
 import { useStore } from "vuex";
-
 import { PlusIcon } from "lucide-vue-next";
+
 const store = useStore();
-
-// 菜单展开状态
-const expandedMenus = reactive({
-  myInfo: true,
-  myPosts: false,
-});
-
-// 切换菜单展开状态
-const toggleMenu = (menu) => {
-  expandedMenus[menu] = !expandedMenus[menu];
-};
-
-// 当前激活的部分
-const activeSection = ref("basic");
+const router = useRouter();
 
 // 基本信息表单数据
 const userName = ref("");
@@ -126,78 +123,124 @@ const idCard = ref("");
 const address = ref("");
 const avatar = ref("");
 
+// 上传相关状态
+const image = ref([]);
+const imageDB = ref("");
+const isSaving = ref(false); // 保存状态控制
+
+// 初始化加载个人信息
 onMounted(async () => {
-  //检索个人信息
-  selectPersMsg();
+  try {
+    await selectPersMsg();
+  } catch (error) {
+    ElMessage.error("加载个人信息失败，请刷新页面重试");
+  }
 });
 
-const image = ref([]);
-const imageDB = ref('');
-
+// 处理图片上传
 const handleImageUpload = (file) => {
-  image.value.push(file);
+  // 验证文件类型
+  const isImage = file.raw.type.startsWith('image/');
+  if (!isImage) {
+    ElMessage.error("请上传图片文件（JPG/PNG）");
+    return;
+  }
+
+  // 验证文件大小（2MB）
+  const maxSize = 2 * 1024 * 1024;
+  if (file.raw.size > maxSize) {
+    ElMessage.error("图片大小不能超过2MB");
+    return;
+  }
+
+  image.value = [file];
 };
 
 // 保存个人信息
 const saveProfile = async () => {
+  // 表单验证
+  if (!nickname.value.trim()) {
+    ElMessage.warning("请输入昵称");
+    return;
+  }
+  if (!name.value.trim()) {
+    ElMessage.warning("请输入真实姓名");
+    return;
+  }
+  if (phone.value && !/^1[3-9]\d{9}$/.test(phone.value)) {
+    ElMessage.warning("请输入有效的手机号");
+    return;
+  }
+  if (idCard.value && !/^\d{17}[\dX]$/.test(idCard.value)) {
+    ElMessage.warning("请输入有效的身份证号");
+    return;
+  }
+
+  isSaving.value = true;
   try {
-    //上传头像
-    for (const file of image.value) {
+    // 上传头像（如有新图片）
+    if (image.value.length > 0) {
       const formData = new FormData();
-      formData.append("file", file.raw);
+      formData.append("file", image.value[0].raw);
 
-      //上传商品图片
-      const response = await apiClient.post(
-        `${store.state.fileUploadRoad}/file/upload/avatar`,
-        formData,
-        {
-          headers: {
-            Authorization: window.localStorage.token,
-            "Content-Type": "multipart/form-data",
-          },
-        }
+      const uploadRes = await apiClient.post(
+          `${store.state.fileUploadRoad}/file/upload/avatar`,
+          formData,
+          {
+            headers: {
+              Authorization: window.localStorage.token,
+              "Content-Type": "multipart/form-data",
+            },
+          }
       );
-      if (response.flag) {
-        imageDB.value = response.data.split("/")[1];
-      } else {
-        ElMessage.error("修改个人信息失败，请重试。");
-      }
-    }
 
-    if(!imageDB.value){
+      if (!uploadRes.flag) {
+        ElMessage.error("头像上传失败，请重试");
+        return;
+      }
+      imageDB.value = uploadRes.data.split("/")[1];
+    } else {
+      // 无新图片则沿用原头像
       imageDB.value = avatar.value;
     }
-    const param = ref({
-      realName: name.value,
-      nickName: nickname.value,
-      phone: phone.value,
-      identityNum: idCard.value,
-      address: address.value,
+
+    // 提交个人信息
+    const param = {
+      realName: name.value.trim(),
+      nickName: nickname.value.trim(),
+      phone: phone.value.trim(),
+      identityNum: idCard.value.trim(),
+      address: address.value.trim(),
       avatar: imageDB.value,
-    });
-    //增加咨询
-    const response = await apiClient.post(
-      `/user/loginUpdateByUsername`,
-      param.value,
-      {
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: window.localStorage.token,
-        },
-      }
+    };
+
+    const updateRes = await apiClient.post(
+        "/user/loginUpdateByUsername",
+        param,
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: window.localStorage.token,
+          },
+        }
     );
 
-    if (response.flag) {
-      ElMessage.success("修改个人信息成功。");
+    if (updateRes.flag) {
+      ElMessage.success("个人信息修改成功");
+      // 刷新页面数据
+      await selectPersMsg();
     } else {
-      ElMessage.error("修改个人信息失败，请重试。");
+      ElMessage.error(`修改失败：${updateRes.msg || '未知错误'}`);
     }
   } catch (error) {
-    console.error("修改个人信息失败，请重试：", error);
+    console.error("保存信息失败：", error);
+    ElMessage.error("网络异常，请稍后重试");
+  } finally {
+    isSaving.value = false;
   }
 };
 
-// 查询个人信息接口
+// 查询个人信息
 const selectPersMsg = async () => {
   try {
     const response = await apiClient.get("/user/loginSelectByUsername", {
@@ -205,35 +248,39 @@ const selectPersMsg = async () => {
         Authorization: window.localStorage.token,
       },
     });
-    console.log("请求成功", response.data);
-    if (response.flag == true) {
-      userName.value = response.data.userName;
-      nickname.value = response.data.nickName;
-      name.value = response.data.realName;
-      phone.value = response.data.phone;
-      idCard.value = response.data.identityNum;
-      address.value = response.data.address;
-      avatar.value = response.data.avatar;
-      return;
+
+    if (response.flag) {
+      const data = response.data;
+      userName.value = data.userName || "";
+      nickname.value = data.nickName || "";
+      name.value = data.realName || "";
+      phone.value = data.phone || "";
+      idCard.value = data.identityNum || "";
+      address.value = data.address || "";
+      avatar.value = data.avatar || "";
     } else {
-      console.error("请求失败", error);
+      ElMessage.error(`获取信息失败：${response.msg || '未知错误'}`);
     }
   } catch (error) {
-    console.error("请求失败", error);
+    console.error("查询个人信息接口异常：", error);
     throw error;
   }
 };
-
 </script>
 
 <style scoped>
-/* 确保上传图片预览也是圆形且无边框 */
+/* 头像样式优化 */
 :deep(.el-upload-list__item-thumbnail),
 :deep(.el-upload-list__item img),
 :deep(.el-upload-list__item) {
   border-radius: 50% !important;
   object-fit: cover;
   border: none !important;
-  background-color: #007029 !important;
+}
+
+/* 上传按钮hover样式 */
+:deep(.el-upload--picture-card:hover) {
+  background-color: #f0fdf4 !important;
+  border-color: #22c55e !important;
 }
 </style>
